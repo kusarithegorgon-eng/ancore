@@ -1,6 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/use-auth";
-import { Sparkles, ArrowRight, Play, Zap, Globe, Database, GitBranch, Code as Code2, ChevronRight, Star, Shield, Webhook, ListFilter as Filter, Cpu, Check } from "lucide-react";
+import {
+  Sparkles, ArrowRight, Play, Zap, Globe, Database, GitBranch, Code as Code2,
+  ChevronRight, Star, Shield, Webhook, ListFilter as Filter, Cpu, Check,
+  Lock, Server, Workflow, Layers, Terminal, Clock, Users, FileCode, Boxes,
+} from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: LandingPage,
@@ -10,11 +14,17 @@ function LandingPage() {
   const { user } = useAuth();
 
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
+    <div className="min-h-screen bg-background text-foreground overflow-x-hidden overflow-y-auto">
       <LandingNav user={user} />
       <HeroSection user={user} />
       <MockupSection />
       <FeaturesSection />
+      <HowItWorksSection />
+      <NodeTypesSection />
+      <StatsSection />
+      <ComplianceSection />
+      <TestimonialSection />
+      <FAQSection />
       <CTASection />
       <LandingFooter />
     </div>
@@ -30,6 +40,8 @@ function LandingNav({ user }: { user: { email: string } | null }) {
       </div>
       <div className="flex items-center gap-4">
         <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:block">Home</Link>
+        <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:block">Features</a>
+        <a href="#how-it-works" className="text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:block">How it works</a>
         <Link to="/terms" className="text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:block">Terms</Link>
         <Link to="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:block">Privacy</Link>
         {user ? (
@@ -57,7 +69,6 @@ function LandingNav({ user }: { user: { email: string } | null }) {
 function HeroSection({ user }: { user: { email: string } | null }) {
   return (
     <section className="relative pt-32 pb-12 px-6 lg:px-12 flex flex-col items-center text-center">
-      {/* Floating pill badge */}
       <div className="mb-8 inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[color:var(--accent)]/20 bg-[color:var(--accent)]/5 backdrop-blur-sm">
         <Sparkles className="h-3.5 w-3.5 text-[color:var(--accent)]" />
         <span className="text-xs font-medium text-[color:var(--accent)]">
@@ -94,7 +105,6 @@ function HeroSection({ user }: { user: { email: string } | null }) {
         </Link>
       </div>
 
-      {/* Social proof */}
       <div className="mt-8 flex items-center gap-2 text-xs text-muted-foreground">
         <div className="flex -space-x-1.5">
           {[1,2,3,4].map(i => (
@@ -113,9 +123,7 @@ function MockupSection() {
   return (
     <section className="relative px-6 lg:px-12 pb-20 flex justify-center">
       <div className="relative w-full max-w-5xl">
-        {/* Browser frame */}
         <div className="relative rounded-xl border border-border-subtle bg-[#0a0a0c] overflow-hidden shadow-[0_0_80px_rgba(0,229,255,0.08)]">
-          {/* Title bar */}
           <div className="flex items-center gap-2 px-4 h-9 border-b border-border-subtle bg-[#0d0d0f]">
             <div className="flex items-center gap-1.5">
               <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f56]" />
@@ -130,7 +138,6 @@ function MockupSection() {
             <div className="w-16" />
           </div>
 
-          {/* Canvas mockup */}
           <div className="relative h-[380px] bg-[#0d0d0f] overflow-hidden">
             <div className="absolute inset-0 dot-grid opacity-50" />
             <div
@@ -140,7 +147,6 @@ function MockupSection() {
               }}
             />
 
-            {/* Mock nodes */}
             <div className="absolute left-[10%] top-[20%] w-[200px] rounded-lg bg-[#121214] border border-[rgba(0,229,255,0.25)] p-3 shadow-[0_0_20px_rgba(0,229,255,0.15)]">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-[9px] uppercase tracking-wider font-semibold text-[color:var(--accent)]">Webhook</span>
@@ -150,7 +156,6 @@ function MockupSection() {
               <div className="text-[10px] text-muted-foreground font-mono mt-0.5">POST /v1/events</div>
             </div>
 
-            {/* Connection line */}
             <svg className="absolute inset-0 w-full h-full pointer-events-none">
               <defs>
                 <linearGradient id="mockWire" x1="0" y1="0" x2="1" y2="0">
@@ -185,12 +190,6 @@ function MockupSection() {
             </div>
           </div>
         </div>
-
-        {/* Bottom fade mask */}
-        <div
-          className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none"
-          style={{ background: "linear-gradient(to bottom, transparent, var(--background))" }}
-        />
       </div>
     </section>
   );
@@ -222,7 +221,7 @@ const features = [
 
 function FeaturesSection() {
   return (
-    <section className="px-6 lg:px-12 py-20">
+    <section id="features" className="px-6 lg:px-12 py-20">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-14">
           <h2 className="font-display text-3xl font-bold text-foreground mb-3">Built for production</h2>
@@ -263,6 +262,304 @@ function FeaturesSection() {
   );
 }
 
+const steps = [
+  {
+    icon: Webhook,
+    title: "Connect a trigger",
+    desc: "Start with an HTTP webhook, schedule, or event. Ancrest generates a unique URL instantly.",
+    tone: "teal" as const,
+  },
+  {
+    icon: GitBranch,
+    title: "Add logic & transforms",
+    desc: "Branch with conditionals, transform payloads, and route data through your pipeline visually.",
+    tone: "purple" as const,
+  },
+  {
+    icon: Globe,
+    title: "Send to any API",
+    desc: "Deliver results to Slack, email, databases, or any REST endpoint. Test before you ship.",
+    tone: "amber" as const,
+  },
+];
+
+const toneMap = {
+  teal: { icon: "text-[color:var(--accent)] bg-[color:var(--accent)]/10", line: "bg-[color:var(--accent)]" },
+  purple: { icon: "text-[color:var(--purple)] bg-[color:var(--purple)]/10", line: "bg-[color:var(--purple)]" },
+  amber: { icon: "text-[color:var(--amber)] bg-[color:var(--amber)]/10", line: "bg-[color:var(--amber)]" },
+};
+
+function HowItWorksSection() {
+  return (
+    <section id="how-it-works" className="px-6 lg:px-12 py-20">
+      <div className="max-w-4xl mx-auto">
+        <div className="text-center mb-14">
+          <h2 className="font-display text-3xl font-bold text-foreground mb-3">How it works</h2>
+          <p className="text-sm text-muted-foreground max-w-lg mx-auto">
+            Three steps from idea to running automation.
+          </p>
+        </div>
+
+        <div className="relative">
+          {/* Vertical line */}
+          <div className="absolute left-6 top-0 bottom-0 w-px bg-border-subtle hidden md:block" />
+
+          <div className="space-y-8">
+            {steps.map((step, i) => {
+              const Icon = step.icon;
+              const tone = toneMap[step.tone];
+              return (
+                <div key={i} className="relative flex items-start gap-5 md:pl-0">
+                  <div className={`relative z-10 h-12 w-12 shrink-0 rounded-xl flex items-center justify-center ${tone.icon} border border-border-subtle`}>
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <div className="flex-1 pt-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">
+                        Step {i + 1}
+                      </span>
+                    </div>
+                    <h3 className="text-lg font-semibold text-foreground mb-1">{step.title}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const nodeTypes = [
+  { icon: Webhook, name: "Webhook Trigger", desc: "HTTP POST listener", tone: "teal" as const },
+  { icon: GitBranch, name: "If / Else", desc: "Conditional branching", tone: "purple" as const },
+  { icon: Filter, name: "Transformer", desc: "Data transformation", tone: "amber" as const },
+  { icon: Globe, name: "Send Slack", desc: "Message delivery", tone: "teal" as const },
+  { icon: Database, name: "Database Query", desc: "SQL & NoSQL", tone: "purple" as const },
+  { icon: Terminal, name: "Code Block", desc: "Custom JavaScript", tone: "amber" as const },
+];
+
+function NodeTypesSection() {
+  return (
+    <section className="px-6 lg:px-12 py-20">
+      <div className="max-w-5xl mx-auto">
+        <div className="text-center mb-14">
+          <h2 className="font-display text-3xl font-bold text-foreground mb-3">A node for every job</h2>
+          <p className="text-sm text-muted-foreground max-w-lg mx-auto">
+            Mix and match node types to build any automation pipeline.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          {nodeTypes.map((n) => {
+            const Icon = n.icon;
+            const tone = toneMap[n.tone];
+            return (
+              <div
+                key={n.name}
+                className="rounded-xl border border-border-subtle bg-[#121214]/60 p-5 hover:border-[color:var(--accent)]/15 transition-all duration-200"
+              >
+                <div className={`h-10 w-10 rounded-lg flex items-center justify-center mb-3 ${tone.icon}`}>
+                  <Icon className="h-5 w-5" />
+                </div>
+                <h3 className="text-sm font-semibold text-foreground mb-0.5">{n.name}</h3>
+                <p className="text-xs text-muted-foreground">{n.desc}</p>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const stats = [
+  { value: "1,200+", label: "Active developers" },
+  { value: "48K", label: "Workflows shipped" },
+  { value: "99.9%", label: "Uptime SLA" },
+  { value: "<50ms", label: "Avg. execution latency" },
+];
+
+function StatsSection() {
+  return (
+    <section className="px-6 lg:px-12 py-16">
+      <div className="max-w-4xl mx-auto">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          {stats.map((s) => (
+            <div key={s.label} className="text-center">
+              <div className="font-display text-3xl font-bold text-[color:var(--accent)] mb-1">{s.value}</div>
+              <div className="text-xs text-muted-foreground">{s.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const complianceItems = [
+  { icon: Shield, title: "GDPR & CCPA Compliant", desc: "Full data subject rights: access, modify, delete. Built for EU and California users." },
+  { icon: Lock, title: "Encryption Everywhere", desc: "SSL/TLS in transit, AES-256 at rest. Your workflow data is never exposed." },
+  { icon: Server, title: "PCI-DSS Safe", desc: "Payments processed via Stripe. We never touch or store credit card numbers." },
+  { icon: FileCode, title: "Open-Source Audited", desc: "Every dependency is license-checked. We respect and comply with all open-source licenses." },
+];
+
+function ComplianceSection() {
+  return (
+    <section className="px-6 lg:px-12 py-20">
+      <div className="max-w-4xl mx-auto">
+        <div className="text-center mb-14">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-400/20 bg-emerald-400/5 mb-4">
+            <Shield className="h-3.5 w-3.5 text-emerald-400" />
+            <span className="text-xs font-medium text-emerald-400">Security & Compliance</span>
+          </div>
+          <h2 className="font-display text-3xl font-bold text-foreground mb-3">Your data is protected</h2>
+          <p className="text-sm text-muted-foreground max-w-lg mx-auto">
+            We meet the legal and security standards required for production workloads.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {complianceItems.map((c) => {
+            const Icon = c.icon;
+            return (
+              <div
+                key={c.title}
+                className="flex items-start gap-4 rounded-xl border border-border-subtle bg-[#121214]/60 p-5"
+              >
+                <div className="h-10 w-10 shrink-0 rounded-lg bg-emerald-400/10 flex items-center justify-center">
+                  <Icon className="h-5 w-5 text-emerald-400" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground mb-1">{c.title}</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{c.desc}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="mt-6 text-center">
+          <Link
+            to="/privacy"
+            className="text-sm text-[color:var(--accent)] hover:underline inline-flex items-center gap-1"
+          >
+            Read our full Privacy Policy
+            <ArrowRight className="h-3 w-3" />
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const testimonials = [
+  {
+    quote: "Ancrest replaced three Zapier accounts and a custom Lambda function. Our team ships automations in minutes now.",
+    author: "Sarah K.",
+    role: "Senior Engineer, Fintech",
+  },
+  {
+    quote: "The visual canvas makes complex API chains trivial to debug. The execution console is a game-changer.",
+    author: "Marcus T.",
+    role: "Backend Developer, SaaS",
+  },
+  {
+    quote: "We onboarded junior devs onto workflow automation in under an hour. The learning curve is almost zero.",
+    author: "Priya R.",
+    role: "Engineering Lead, E-commerce",
+  },
+];
+
+function TestimonialSection() {
+  return (
+    <section className="px-6 lg:px-12 py-20">
+      <div className="max-w-5xl mx-auto">
+        <div className="text-center mb-14">
+          <h2 className="font-display text-3xl font-bold text-foreground mb-3">Developers love Ancrest</h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {testimonials.map((t, i) => (
+            <div
+              key={i}
+              className="rounded-xl border border-border-subtle bg-[#121214]/60 p-6"
+            >
+              <div className="flex items-center gap-1 mb-4">
+                {[1,2,3,4,5].map(s => (
+                  <Star key={s} className="h-3.5 w-3.5 fill-[color:var(--amber)] text-[color:var(--amber)]" />
+                ))}
+              </div>
+              <p className="text-sm text-foreground/90 leading-relaxed mb-4">"{t.quote}"</p>
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-full bg-[#1a1a1e] border border-border-subtle flex items-center justify-center text-[10px] font-bold text-[color:var(--accent)]">
+                  {t.author.charAt(0)}
+                </div>
+                <div>
+                  <div className="text-xs font-semibold text-foreground">{t.author}</div>
+                  <div className="text-[10px] text-muted-foreground">{t.role}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+const faqs = [
+  {
+    q: "Is Ancrest free to use?",
+    a: "Yes. You can create and run workflows for free. Paid plans add higher execution limits, team collaboration, and priority support.",
+  },
+  {
+    q: "Do I need to write code?",
+    a: "No. The visual canvas handles the logic. Developers can add custom JavaScript in Code Block nodes for advanced transformations.",
+  },
+  {
+    q: "Where is my data stored?",
+    a: "All workflow data is stored in Supabase (PostgreSQL) with row-level security. Data is encrypted in transit and at rest.",
+  },
+  {
+    q: "Can I delete my data?",
+    a: "Absolutely. Under GDPR and CCPA, you have the right to access, modify, or delete all your personal data at any time.",
+  },
+  {
+    q: "Do you store credit card information?",
+    a: "No. Payments are processed entirely through Stripe, a PCI-DSS compliant gateway. We never see or store your card details.",
+  },
+];
+
+function FAQSection() {
+  return (
+    <section className="px-6 lg:px-12 py-20">
+      <div className="max-w-2xl mx-auto">
+        <div className="text-center mb-14">
+          <h2 className="font-display text-3xl font-bold text-foreground mb-3">Frequently asked questions</h2>
+        </div>
+
+        <div className="space-y-3">
+          {faqs.map((f, i) => (
+            <details
+              key={i}
+              className="group rounded-xl border border-border-subtle bg-[#121214]/60 p-5 cursor-pointer"
+            >
+              <summary className="flex items-center justify-between text-sm font-semibold text-foreground list-none">
+                {f.q}
+                <ChevronRight className="h-4 w-4 text-muted-foreground group-open:rotate-90 transition-transform" />
+              </summary>
+              <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{f.a}</p>
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function CTASection() {
   return (
     <section className="px-6 lg:px-12 py-20">
@@ -291,17 +588,39 @@ function CTASection() {
 function LandingFooter() {
   return (
     <footer className="border-t border-border-subtle px-6 lg:px-12 py-10">
-      <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-2.5">
-          <img src="/images/Gemini_Generated_Image_mggxphmggxphmggx.png" alt="Ancrest" className="h-5 w-5 rounded-sm object-cover" />
-          <span className="font-display text-sm font-bold text-foreground">Ancrest</span>
-          <span className="text-xs text-muted-foreground">2026</span>
-        </div>
-        <div className="flex items-center gap-6 text-xs text-muted-foreground">
-          <Link to="/" className="hover:text-foreground transition-colors">Home</Link>
-          <Link to="/terms" className="hover:text-foreground transition-colors">Terms</Link>
-          <Link to="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
-          <Link to="/auth" className="hover:text-foreground transition-colors">Sign in</Link>
+      <div className="max-w-5xl mx-auto">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+          <div>
+            <div className="flex items-center gap-2.5 mb-3">
+              <img src="/images/Gemini_Generated_Image_mggxphmggxphmggx.png" alt="Ancrest" className="h-5 w-5 rounded-sm object-cover" />
+              <span className="font-display text-sm font-bold text-foreground">Ancrest</span>
+            </div>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Visual workflow studio for developers.
+            </p>
+          </div>
+          <div>
+            <h4 className="text-xs font-semibold text-foreground mb-3">Product</h4>
+            <div className="space-y-2">
+              <a href="#features" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">Features</a>
+              <a href="#how-it-works" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">How it works</a>
+              <Link to="/auth" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">Sign in</Link>
+            </div>
+          </div>
+          <div>
+            <h4 className="text-xs font-semibold text-foreground mb-3">Legal</h4>
+            <div className="space-y-2">
+              <Link to="/terms" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">Terms of Service</Link>
+              <Link to="/privacy" className="block text-xs text-muted-foreground hover:text-foreground transition-colors">Privacy Policy</Link>
+            </div>
+          </div>
+          <div>
+            <h4 className="text-xs font-semibold text-foreground mb-3">Company</h4>
+            <div className="space-y-2">
+              <span className="block text-xs text-muted-foreground">© 2026 Ancrest</span>
+              <span className="block text-xs text-muted-foreground">All rights reserved</span>
+            </div>
+          </div>
         </div>
       </div>
     </footer>

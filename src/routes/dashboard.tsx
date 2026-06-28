@@ -22,19 +22,20 @@ export const Route = createFileRoute("/dashboard")({
 });
 
 function DashboardPage() {
-  const { user, signOut } = useAuth();
+  const { user, loading: authLoading, signOut } = useAuth();
   const navigate = useNavigate();
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [loading, setLoading] = useState(true);
   const [showTemplates, setShowTemplates] = useState(false);
 
   useEffect(() => {
+    if (authLoading) return;
     if (!user) {
       navigate({ to: "/auth" });
       return;
     }
     loadWorkflows();
-  }, [user, navigate]);
+  }, [user, authLoading, navigate]);
 
   async function loadWorkflows() {
     setLoading(true);

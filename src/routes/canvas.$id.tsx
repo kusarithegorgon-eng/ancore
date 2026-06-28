@@ -92,10 +92,11 @@ function CanvasPage() {
 
   // Auth guard
   useEffect(() => {
+    if (authLoading) return;
     if (!user) {
       navigate({ to: "/auth" });
     }
-  }, [user, navigate]);
+  }, [user, authLoading, navigate]);
 
   // Load workflow
   useEffect(() => {
