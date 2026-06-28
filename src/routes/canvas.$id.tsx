@@ -16,16 +16,16 @@ import { ExecutionEngine } from "@/lib/execution-engine";
 type SidebarNodeItem = {
   icon: typeof Webhook;
   name: string;
-  type: "webhook" | "ifelse" | "transformer" | "slack";
+  type: "trigger" | "logic" | "transformer" | "action";
   desc: string;
   tone: "teal" | "purple" | "amber";
 };
 
 const SIDEBAR_NODES: SidebarNodeItem[] = [
-  { icon: Webhook, name: "Webhook", type: "webhook", desc: "HTTP trigger", tone: "teal" },
-  { icon: GitBranch, name: "If / Else", type: "ifelse", desc: "Conditional logic", tone: "purple" },
+  { icon: Webhook, name: "Webhook", type: "trigger", desc: "HTTP trigger", tone: "teal" },
+  { icon: GitBranch, name: "If / Else", type: "logic", desc: "Conditional logic", tone: "purple" },
   { icon: Filter, name: "Transformer", type: "transformer", desc: "Data transform", tone: "amber" },
-  { icon: Globe, name: "Send Slack", type: "slack", desc: "Message channel", tone: "teal" },
+  { icon: Globe, name: "Send Slack", type: "action", desc: "Message channel", tone: "teal" },
 ];
 
 const toneColors = {
@@ -154,9 +154,10 @@ function CanvasPage() {
     const dy = e.clientY - lastMouse.current.y;
 
     if (dragNodeId.current) {
-      store.updateNode(dragNodeId.current, {
-        x: store.nodes.find((n) => n.id === dragNodeId.current)!.x + dx / store.viewport.zoom,
-        y: store.nodes.find((n) => n.id === dragNodeId.current)!.y + dy / store.viewport.zoom,
+      const node = store.nodes.find((n) => n.id === dragNodeId.current)!;
+      store.updateNodePosition(dragNodeId.current, {
+        x: node.position.x + dx / store.viewport.zoom,
+        y: node.position.y + dy / store.viewport.zoom,
       });
     } else if (store.isPanning) {
       store.panViewport(dx / store.viewport.zoom, dy / store.viewport.zoom);
@@ -180,7 +181,7 @@ function CanvasPage() {
     }
   }, [store]);
 
-  const addNode = (type: "webhook" | "ifelse" | "transformer" | "slack") => {
+  const addNode = (type: "trigger" | "logic" | "transformer" | "action") => {
     const rect = canvasRef.current?.getBoundingClientRect();
     const cx = rect ? rect.width / 2 : 400;
     const cy = rect ? rect.height / 2 : 300;
@@ -329,8 +330,8 @@ function CanvasPage() {
                 data-node-id={node.id}
                 className="absolute"
                 style={{
-                  left: node.x,
-                  top: node.y,
+                  left: node.position.x,
+                  top: node.position.y,
                   width: node.width,
                   zIndex: store.selectedNodeId === node.id ? 10 : 2,
                 }}
@@ -357,13 +358,13 @@ function CanvasPage() {
 
 function NodeRenderer({ node }: { node: CanvasNode }) {
   switch (node.type) {
-    case "webhook":
+    case "trigger":
       return <WebhookNode node={node} />;
-    case "ifelse":
+    case "logic":
       return <IfElseNode node={node} />;
     case "transformer":
       return <TransformerNode node={node} />;
-    case "slack":
+    case "action":
       return <SlackNode node={node} />;
     default:
       return null;

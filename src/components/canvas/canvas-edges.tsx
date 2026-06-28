@@ -1,27 +1,27 @@
 import { useCanvasStore } from "@/lib/canvas-store";
+import type { CanvasNode } from "@/lib/canvas-store";
 
-function getHandlePosition(node: import("@/lib/canvas-store").CanvasNode, handleId: string, isSource: boolean): { x: number; y: number } {
+function getHandlePosition(node: CanvasNode, handleId: string, isSource: boolean): { x: number; y: number } {
   const handle = isSource
     ? node.outputs.find((h) => h.id === handleId)
     : node.inputs.find((h) => h.id === handleId);
   if (!handle) {
-    // fallback
     return {
-      x: isSource ? node.x + node.width : node.x,
-      y: node.y + node.height / 2,
+      x: isSource ? node.position.x + node.width : node.position.x,
+      y: node.position.y + node.height / 2,
     };
   }
   switch (handle.position) {
     case "left":
-      return { x: node.x, y: node.y + node.height / 2 };
+      return { x: node.position.x, y: node.position.y + node.height / 2 };
     case "right":
-      return { x: node.x + node.width, y: node.y + node.height / 2 };
+      return { x: node.position.x + node.width, y: node.position.y + node.height / 2 };
     case "top":
-      return { x: node.x + node.width / 2, y: node.y };
+      return { x: node.position.x + node.width / 2, y: node.position.y };
     case "bottom":
-      return { x: node.x + node.width / 2, y: node.y + node.height };
+      return { x: node.position.x + node.width / 2, y: node.position.y + node.height };
     default:
-      return { x: isSource ? node.x + node.width : node.x, y: node.y + node.height / 2 };
+      return { x: isSource ? node.position.x + node.width : node.position.x, y: node.position.y + node.height / 2 };
   }
 }
 
@@ -77,14 +77,14 @@ export function CanvasEdges() {
         </linearGradient>
       </defs>
       {edges.map((edge) => {
-        const sourceNode = nodes.find((n) => n.id === edge.sourceNodeId);
-        const targetNode = nodes.find((n) => n.id === edge.targetNodeId);
+        const sourceNode = nodes.find((n) => n.id === edge.source);
+        const targetNode = nodes.find((n) => n.id === edge.target);
         if (!sourceNode || !targetNode) return null;
 
         const sourceHandle = sourceNode.outputs.find((h) => h.id === edge.sourceHandle);
         const targetHandle = targetNode.inputs.find((h) => h.id === edge.targetHandle);
-        const sourcePos = getHandlePosition(sourceNode, edge.sourceHandle, true);
-        const targetPos = getHandlePosition(targetNode, edge.targetHandle, false);
+        const sourcePos = getHandlePosition(sourceNode, edge.sourceHandle ?? "out", true);
+        const targetPos = getHandlePosition(targetNode, edge.targetHandle ?? "in", false);
         const d = computeBezierPath(
           sourcePos.x, sourcePos.y, targetPos.x, targetPos.y,
           sourceHandle?.position ?? "right", targetHandle?.position ?? "left"

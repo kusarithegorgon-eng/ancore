@@ -31,7 +31,7 @@ function LandingNav({ user }: { user: { email: string } | null }) {
         >
           <Sparkles className="h-3.5 w-3.5 text-[#07181c]" strokeWidth={2.5} />
         </div>
-        <span className="font-display text-lg font-bold tracking-tight text-foreground">Ancore</span>
+        <span className="font-display text-lg font-bold tracking-tight text-foreground">Ancrest</span>
       </div>
       <div className="flex items-center gap-4">
         <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:block">Home</Link>
@@ -78,7 +78,7 @@ function HeroSection({ user }: { user: { email: string } | null }) {
       </h1>
 
       <p className="mt-6 max-w-xl mx-auto text-base text-muted-foreground leading-relaxed">
-        Ancore is a visual workflow studio for developers. Design, test, and deploy
+        Ancrest is a visual workflow studio for developers. Design, test, and deploy
         automation pipelines with a drag-and-drop canvas. No boilerplate, no limits.
       </p>
 
@@ -129,7 +129,7 @@ function MockupSection() {
             </div>
             <div className="flex-1 flex justify-center">
               <div className="px-3 py-1 rounded-md bg-[#121214] border border-border-subtle text-[10px] text-muted-foreground font-mono">
-                app.ancore.dev/canvas/stripe-notifier
+                app.ancrest.dev/canvas/stripe-notifier
               </div>
             </div>
             <div className="w-16" />
@@ -278,7 +278,7 @@ function CTASection() {
         />
         <h2 className="font-display text-2xl font-bold text-foreground mb-3 relative z-10">Ready to automate?</h2>
         <p className="text-sm text-muted-foreground mb-6 relative z-10 max-w-md mx-auto">
-          Join developers shipping workflows with Ancore. No credit card required.
+          Join developers shipping workflows with Ancrest. No credit card required.
         </p>
         <Link
           to="/auth"
@@ -304,7 +304,7 @@ function LandingFooter() {
           >
             <Sparkles className="h-2.5 w-2.5 text-[#07181c]" strokeWidth={3} />
           </div>
-          <span className="font-display text-sm font-bold text-foreground">Ancore</span>
+          <span className="font-display text-sm font-bold text-foreground">Ancrest</span>
           <span className="text-xs text-muted-foreground">2026</span>
         </div>
         <div className="flex items-center gap-6 text-xs text-muted-foreground">

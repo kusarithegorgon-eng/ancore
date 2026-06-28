@@ -1,9 +1,11 @@
 import { useCanvasStore } from "@/lib/canvas-store";
 import { ListFilter as Filter } from "lucide-react";
+import type { CanvasNode } from "@/lib/canvas-store";
 
-export function TransformerNode({ node }: { node: import("@/lib/canvas-store").CanvasNode }) {
+export function TransformerNode({ node }: { node: CanvasNode }) {
   const store = useCanvasStore();
   const isSelected = store.selectedNodeId === node.id;
+  const data = node.data as { transformFunction?: string };
 
   return (
     <div
@@ -42,7 +44,7 @@ export function TransformerNode({ node }: { node: import("@/lib/canvas-store").C
         <div className="mb-3">
           <label className="block text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1.5">Function</label>
           <select
-            value={node.data.transformFunction ?? "uppercase"}
+            value={data.transformFunction ?? "uppercase"}
             onChange={(e) => store.updateNodeData(node.id, { transformFunction: e.target.value as any })}
             className="w-full h-8 px-2 rounded-md bg-[#0a0a0c] border border-border-subtle text-[12px] text-foreground focus:outline-none focus:border-[color:var(--amber)]/40 appearance-none"
             onClick={(e) => e.stopPropagation()}

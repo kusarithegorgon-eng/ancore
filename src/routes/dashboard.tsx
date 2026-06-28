@@ -147,7 +147,7 @@ function DashboardHeader({ user, onSignOut }: { user: { email: string } | null; 
           <Sparkles className="h-3.5 w-3.5 text-[#07181c]" strokeWidth={2.5} />
         </div>
         <Link to="/" className="font-display text-lg font-bold tracking-tight text-foreground hover:opacity-80 transition-opacity">
-          Ancore
+          Ancrest
         </Link>
       </div>
       <div className="flex items-center gap-4">

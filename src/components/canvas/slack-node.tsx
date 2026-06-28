@@ -1,9 +1,11 @@
 import { useCanvasStore } from "@/lib/canvas-store";
 import { Globe } from "lucide-react";
+import type { CanvasNode } from "@/lib/canvas-store";
 
-export function SlackNode({ node }: { node: import("@/lib/canvas-store").CanvasNode }) {
+export function SlackNode({ node }: { node: CanvasNode }) {
   const store = useCanvasStore();
   const isSelected = store.selectedNodeId === node.id;
+  const data = node.data as { channelName?: string; messageText?: string };
 
   return (
     <div
@@ -39,7 +41,7 @@ export function SlackNode({ node }: { node: import("@/lib/canvas-store").CanvasN
             <label className="block text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1">Channel</label>
             <input
               type="text"
-              value={node.data.channelName ?? ""}
+              value={data.channelName ?? ""}
               onChange={(e) => store.updateNodeData(node.id, { channelName: e.target.value })}
               className="w-full h-7 px-2 rounded-md bg-[#0a0a0c] border border-border-subtle text-[12px] text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:border-[color:var(--accent)]/40"
               placeholder="#notifications"
@@ -49,7 +51,7 @@ export function SlackNode({ node }: { node: import("@/lib/canvas-store").CanvasN
           <div>
             <label className="block text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1">Message</label>
             <textarea
-              value={node.data.messageText ?? ""}
+              value={data.messageText ?? ""}
               onChange={(e) => store.updateNodeData(node.id, { messageText: e.target.value })}
               className="w-full h-16 px-2 py-1.5 rounded-md bg-[#0a0a0c] border border-border-subtle text-[12px] text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:border-[color:var(--accent)]/40 resize-none"
               placeholder="New event: {{event.type}}"

@@ -57,7 +57,7 @@ function AuthPage() {
               <Sparkles className="h-4 w-4 text-[#07181c]" strokeWidth={2.5} />
             </div>
             <span className="font-display text-lg font-bold tracking-tight text-foreground">
-              Ancore
+              Ancrest
             </span>
           </div>
 

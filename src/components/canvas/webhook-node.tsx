@@ -1,13 +1,15 @@
 import { useCanvasStore } from "@/lib/canvas-store";
 import { Webhook, Copy, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import type { CanvasNode } from "@/lib/canvas-store";
 
-export function WebhookNode({ node }: { node: import("@/lib/canvas-store").CanvasNode }) {
+export function WebhookNode({ node }: { node: CanvasNode }) {
   const store = useCanvasStore();
   const isSelected = store.selectedNodeId === node.id;
+  const data = node.data as { webhookUrl?: string; method?: string };
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(node.data.webhookUrl ?? "");
+    navigator.clipboard.writeText(data.webhookUrl ?? "");
     toast.success("Webhook URL copied");
   };
 
@@ -20,11 +22,10 @@ export function WebhookNode({ node }: { node: import("@/lib/canvas-store").Canva
   const handleConnect = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (store.connectingFrom) {
-      // Create edge
       const newEdge = {
         id: `edge-${Date.now()}`,
-        sourceNodeId: store.connectingFrom.nodeId,
-        targetNodeId: node.id,
+        source: store.connectingFrom.nodeId,
+        target: node.id,
         sourceHandle: store.connectingFrom.handleId,
         targetHandle: "in",
       };
@@ -45,7 +46,6 @@ export function WebhookNode({ node }: { node: import("@/lib/canvas-store").Canva
         onClick={(e) => {
           e.stopPropagation();
           if (store.connectingFrom) {
-            // Cannot connect to input-less node
             store.setConnectingFrom(null);
           } else {
             store.setConnectingFrom({ nodeId: node.id, handleId: "out" });
@@ -91,7 +91,7 @@ export function WebhookNode({ node }: { node: import("@/lib/canvas-store").Canva
             </button>
           </div>
           <div className="text-[10px] font-mono text-[color:var(--accent)]/80 break-all">
-            {node.data.webhookUrl ?? "https://api.ancore.dev/webhook/..."}
+            {data.webhookUrl ?? "https://api.ancrest.dev/webhook/..."}
           </div>
         </div>
 

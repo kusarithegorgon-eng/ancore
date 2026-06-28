@@ -26,8 +26,8 @@ export class ExecutionEngine {
       },
     };
 
-    // Find webhook trigger
-    const triggerNode = this.nodes.find((n) => n.type === "webhook");
+    // Find trigger node
+    const triggerNode = this.nodes.find((n) => n.type === "trigger");
     if (!triggerNode) {
       onLog({
         step: 1,
@@ -36,7 +36,7 @@ export class ExecutionEngine {
         input: {},
         output: {},
         status: "error",
-        message: "No webhook trigger node found",
+        message: "No trigger node found",
         timestamp: new Date().toISOString(),
       });
       return;
@@ -63,7 +63,7 @@ export class ExecutionEngine {
     // Traverse edges
     let maxIterations = 20;
     while (currentNodeId && maxIterations-- > 0) {
-      const outgoingEdges = this.edges.filter((e) => e.sourceNodeId === currentNodeId);
+      const outgoingEdges = this.edges.filter((e) => e.source === currentNodeId);
       if (outgoingEdges.length === 0) break;
 
       for (const edge of outgoingEdges) {
@@ -71,7 +71,7 @@ export class ExecutionEngine {
         onActiveEdges([...activeEdges]);
         await this.delay(600);
 
-        const targetNode = this.nodes.find((n) => n.id === edge.targetNodeId);
+        const targetNode = this.nodes.find((n) => n.id === edge.target);
         if (!targetNode || visitedNodes.has(targetNode.id)) continue;
 
         const inputPayload = { ...currentPayload };
@@ -79,8 +79,9 @@ export class ExecutionEngine {
         let status: "success" | "error" = "success";
         let message: string | undefined;
 
-        if (targetNode.type === "ifelse") {
-          const { propertyKey, comparison, comparisonValue } = targetNode.data;
+        if (targetNode.type === "logic") {
+          const data = targetNode.data as { propertyKey?: string; comparison?: string; comparisonValue?: string };
+          const { propertyKey, comparison, comparisonValue } = data;
           const value = this.getValueByPath(currentPayload, propertyKey ?? "status");
           const condition = this.evaluateCondition(value, comparison ?? "equals", comparisonValue ?? "active");
           const branch = condition ? "True" : "False";
@@ -101,19 +102,20 @@ export class ExecutionEngine {
           currentNodeId = targetNode.id;
           // Only continue on the matching branch
           const nextEdge = this.edges.find(
-            (e) => e.sourceNodeId === targetNode.id && e.sourceHandle === (condition ? "true" : "false")
+            (e) => e.source === targetNode.id && e.sourceHandle === (condition ? "true" : "false")
           );
           if (nextEdge) {
             activeEdges.push(nextEdge.id);
             onActiveEdges([...activeEdges]);
             await this.delay(400);
-            currentNodeId = nextEdge.targetNodeId;
+            currentNodeId = nextEdge.target;
           } else {
             currentNodeId = "";
           }
           break;
         } else if (targetNode.type === "transformer") {
-          const fn = targetNode.data.transformFunction ?? "uppercase";
+          const data = targetNode.data as { transformFunction?: string };
+          const fn = data.transformFunction ?? "uppercase";
           outputPayload = this.applyTransform(currentPayload, fn);
           message = `Applied ${fn}`;
           visitedNodes.add(targetNode.id);
@@ -129,9 +131,10 @@ export class ExecutionEngine {
           });
           currentPayload = outputPayload;
           currentNodeId = targetNode.id;
-        } else if (targetNode.type === "slack") {
-          const channel = targetNode.data.channelName ?? "#notifications";
-          const msg = targetNode.data.messageText ?? "New event";
+        } else if (targetNode.type === "action") {
+          const data = targetNode.data as { channelName?: string; messageText?: string };
+          const channel = data.channelName ?? "#notifications";
+          const msg = data.messageText ?? "New event";
           const resolvedMsg = this.resolveTemplate(msg, currentPayload);
           outputPayload = {
             ...currentPayload,
@@ -155,24 +158,24 @@ export class ExecutionEngine {
       }
 
       // Find next edge
-      const nextEdges = this.edges.filter((e) => e.sourceNodeId === currentNodeId);
+      const nextEdges = this.edges.filter((e) => e.source === currentNodeId);
       if (nextEdges.length === 1) {
         activeEdges.push(nextEdges[0].id);
         onActiveEdges([...activeEdges]);
         await this.delay(400);
-        currentNodeId = nextEdges[0].targetNodeId;
+        currentNodeId = nextEdges[0].target;
       } else if (nextEdges.length === 0) {
         break;
       } else {
         // Multiple branches, only continue if one was already selected
         const currentNode = this.nodes.find((n) => n.id === currentNodeId);
-        if (currentNode?.type === "ifelse" && currentPayload._branch) {
+        if (currentNode?.type === "logic" && currentPayload._branch) {
           const branchEdge = nextEdges.find((e) => e.sourceHandle === (currentPayload._branch === "True" ? "true" : "false"));
           if (branchEdge) {
             activeEdges.push(branchEdge.id);
             onActiveEdges([...activeEdges]);
             await this.delay(400);
-            currentNodeId = branchEdge.targetNodeId;
+            currentNodeId = branchEdge.target;
             continue;
           }
         }

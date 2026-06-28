@@ -11,11 +11,11 @@ function PrivacyPage() {
       <div className="max-w-2xl mx-auto px-6 py-20">
         <Link to="/" className="inline-flex items-center gap-2 mb-10 text-sm text-muted-foreground hover:text-foreground transition-colors">
           <Sparkles className="h-4 w-4 text-[color:var(--accent)]" />
-          Back to Ancore
+          Back to Ancrest
         </Link>
         <h1 className="font-display text-3xl font-bold text-foreground mb-8">Privacy Policy</h1>
         <div className="space-y-6 text-sm text-muted-foreground leading-relaxed">
-          <p>Ancore is committed to protecting your privacy. This policy explains how we collect, use, and safeguard your personal information.</p>
+          <p>Ancrest is committed to protecting your privacy. This policy explains how we collect, use, and safeguard your personal information.</p>
           <div>
             <h2 className="text-base font-semibold text-foreground mb-2">1. Information We Collect</h2>
             <p>We collect information you provide directly, such as your email address and workflow data. We also collect usage data to improve our services.</p>

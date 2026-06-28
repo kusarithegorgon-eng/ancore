@@ -1,9 +1,11 @@
 import { useCanvasStore } from "@/lib/canvas-store";
 import { GitBranch } from "lucide-react";
+import type { CanvasNode } from "@/lib/canvas-store";
 
-export function IfElseNode({ node }: { node: import("@/lib/canvas-store").CanvasNode }) {
+export function IfElseNode({ node }: { node: CanvasNode }) {
   const store = useCanvasStore();
   const isSelected = store.selectedNodeId === node.id;
+  const data = node.data as { propertyKey?: string; comparison?: string; comparisonValue?: string };
 
   return (
     <div
@@ -53,7 +55,7 @@ export function IfElseNode({ node }: { node: import("@/lib/canvas-store").Canvas
             <label className="block text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1">Property</label>
             <input
               type="text"
-              value={node.data.propertyKey ?? ""}
+              value={data.propertyKey ?? ""}
               onChange={(e) => store.updateNodeData(node.id, { propertyKey: e.target.value })}
               className="w-full h-7 px-2 rounded-md bg-[#0a0a0c] border border-border-subtle text-[12px] text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:border-[color:var(--purple)]/40"
               placeholder="data.status"
@@ -64,7 +66,7 @@ export function IfElseNode({ node }: { node: import("@/lib/canvas-store").Canvas
             <div className="flex-1">
               <label className="block text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1">Compare</label>
               <select
-                value={node.data.comparison ?? "equals"}
+                value={data.comparison ?? "equals"}
                 onChange={(e) => store.updateNodeData(node.id, { comparison: e.target.value as any })}
                 className="w-full h-7 px-2 rounded-md bg-[#0a0a0c] border border-border-subtle text-[12px] text-foreground focus:outline-none focus:border-[color:var(--purple)]/40 appearance-none"
                 onClick={(e) => e.stopPropagation()}
@@ -79,7 +81,7 @@ export function IfElseNode({ node }: { node: import("@/lib/canvas-store").Canvas
               <label className="block text-[10px] uppercase tracking-wider text-muted-foreground font-medium mb-1">Value</label>
               <input
                 type="text"
-                value={node.data.comparisonValue ?? ""}
+                value={data.comparisonValue ?? ""}
                 onChange={(e) => store.updateNodeData(node.id, { comparisonValue: e.target.value })}
                 className="w-full h-7 px-2 rounded-md bg-[#0a0a0c] border border-border-subtle text-[12px] text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:border-[color:var(--purple)]/40"
                 placeholder="active"
