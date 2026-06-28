@@ -25,12 +25,7 @@ function LandingNav({ user }: { user: { email: string } | null }) {
   return (
     <nav className="fixed inset-x-0 top-0 z-50 glass-nav h-16 flex items-center justify-between px-6 lg:px-12">
       <div className="flex items-center gap-2.5">
-        <div
-          className="h-7 w-7 rounded-md flex items-center justify-center"
-          style={{ background: "linear-gradient(135deg,#00E5FF,#0088aa)", boxShadow: "0 0 14px rgba(0,229,255,0.5)" }}
-        >
-          <Sparkles className="h-3.5 w-3.5 text-[#07181c]" strokeWidth={2.5} />
-        </div>
+        <img src="/images/Gemini_Generated_Image_mggxphmggxphmggx.png" alt="Ancrest" className="h-7 w-7 rounded-md object-cover" />
         <span className="font-display text-lg font-bold tracking-tight text-foreground">Ancrest</span>
       </div>
       <div className="flex items-center gap-4">
@@ -298,12 +293,7 @@ function LandingFooter() {
     <footer className="border-t border-border-subtle px-6 lg:px-12 py-10">
       <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2.5">
-          <div
-            className="h-5 w-5 rounded-sm flex items-center justify-center"
-            style={{ background: "linear-gradient(135deg,#00E5FF,#0088aa)" }}
-          >
-            <Sparkles className="h-2.5 w-2.5 text-[#07181c]" strokeWidth={3} />
-          </div>
+          <img src="/images/Gemini_Generated_Image_mggxphmggxphmggx.png" alt="Ancrest" className="h-5 w-5 rounded-sm object-cover" />
           <span className="font-display text-sm font-bold text-foreground">Ancrest</span>
           <span className="text-xs text-muted-foreground">2026</span>
         </div>

@@ -76,11 +76,17 @@ export type CanvasViewport = {
   zoom: number;
 };
 
+export type HistoryEntry = {
+  nodes: CanvasNode[];
+  edges: CanvasEdge[];
+};
+
 export type CanvasState = {
   nodes: CanvasNode[];
   edges: CanvasEdge[];
   viewport: CanvasViewport;
   selectedNodeId: string | null;
+  selectedEdgeId: string | null;
   isDraggingNode: boolean;
   isPanning: boolean;
   activeEdgeIds: string[];
@@ -89,6 +95,10 @@ export type CanvasState = {
   showConsole: boolean;
   connectingFrom: { nodeId: string; handleId: string } | null;
 
+  // History
+  history: HistoryEntry[];
+  historyIndex: number;
+
   // Actions
   setNodes: (nodes: CanvasNode[]) => void;
   setEdges: (edges: CanvasEdge[]) => void;
@@ -96,12 +106,13 @@ export type CanvasState = {
   updateNodePosition: (id: string, position: NodePosition) => void;
   updateNodeData: (id: string, data: Partial<NodeData>) => void;
   removeNode: (id: string) => void;
-  addEdge: (edge: CanvasEdge) => void;
+  addEdge: (edge: CanvasEdge) => boolean;
   removeEdge: (id: string) => void;
   setViewport: (viewport: CanvasViewport) => void;
   panViewport: (dx: number, dy: number) => void;
   setZoom: (zoom: number) => void;
   setSelectedNodeId: (id: string | null) => void;
+  setSelectedEdgeId: (id: string | null) => void;
   setIsDraggingNode: (val: boolean) => void;
   setIsPanning: (val: boolean) => void;
   setActiveEdgeIds: (ids: string[]) => void;
@@ -110,10 +121,14 @@ export type CanvasState = {
   setIsExecuting: (val: boolean) => void;
   setShowConsole: (val: boolean) => void;
   setConnectingFrom: (val: { nodeId: string; handleId: string } | null) => void;
+  undo: () => void;
+  redo: () => void;
+  pushHistory: () => void;
   reset: () => void;
   loadWorkflow: (nodes: CanvasNode[], edges: CanvasEdge[]) => void;
   getNodeById: (id: string) => CanvasNode | undefined;
   getEdgesForNode: (nodeId: string) => CanvasEdge[];
+  validateEdge: (edge: Omit<CanvasEdge, "id">) => { valid: boolean; error?: string };
 };
 
 const defaultNodeConfig: Record<NodeType, { width: number; height: number; inputs: HandleDef[]; outputs: HandleDef[] }> = {
@@ -210,6 +225,7 @@ const initialState: Omit<
   | "panViewport"
   | "setZoom"
   | "setSelectedNodeId"
+  | "setSelectedEdgeId"
   | "setIsDraggingNode"
   | "setIsPanning"
   | "setActiveEdgeIds"
@@ -218,15 +234,20 @@ const initialState: Omit<
   | "setIsExecuting"
   | "setShowConsole"
   | "setConnectingFrom"
+  | "undo"
+  | "redo"
+  | "pushHistory"
   | "reset"
   | "loadWorkflow"
   | "getNodeById"
   | "getEdgesForNode"
+  | "validateEdge"
 > = {
   nodes: [],
   edges: [],
   viewport: { x: 0, y: 0, zoom: 1 },
   selectedNodeId: null,
+  selectedEdgeId: null,
   isDraggingNode: false,
   isPanning: false,
   activeEdgeIds: [],
@@ -234,7 +255,13 @@ const initialState: Omit<
   isExecuting: false,
   showConsole: false,
   connectingFrom: null,
+  history: [],
+  historyIndex: -1,
 };
+
+function deepClone<T>(obj: T): T {
+  return JSON.parse(JSON.stringify(obj));
+}
 
 export const useCanvasStore = create<CanvasState>((set, get) => ({
   ...initialState,
@@ -242,7 +269,10 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   setNodes: (nodes) => set({ nodes }),
   setEdges: (edges) => set({ edges }),
 
-  addNode: (node) => set((s) => ({ nodes: [...s.nodes, node] })),
+  addNode: (node) => {
+    set((s) => ({ nodes: [...s.nodes, node] }));
+    get().pushHistory();
+  },
 
   updateNodePosition: (id, position) =>
     set((s) => ({
@@ -251,22 +281,84 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       ),
     })),
 
-  updateNodeData: (id, data) =>
+  updateNodeData: (id, data) => {
     set((s) => ({
       nodes: s.nodes.map((n) =>
         n.id === id ? { ...n, data: { ...n.data, ...data } } : n
       ),
-    })),
+    }));
+    get().pushHistory();
+  },
 
-  removeNode: (id) =>
+  removeNode: (id) => {
     set((s) => ({
       nodes: s.nodes.filter((n) => n.id !== id),
       edges: s.edges.filter((e) => e.source !== id && e.target !== id),
-    })),
+      selectedNodeId: s.selectedNodeId === id ? null : s.selectedNodeId,
+    }));
+    get().pushHistory();
+  },
 
-  addEdge: (edge) => set((s) => ({ edges: [...s.edges, edge] })),
+  addEdge: (edge) => {
+    const validation = get().validateEdge(edge);
+    if (!validation.valid) {
+      return false;
+    }
+    set((s) => ({ edges: [...s.edges, edge] }));
+    get().pushHistory();
+    return true;
+  },
 
-  removeEdge: (id) => set((s) => ({ edges: s.edges.filter((e) => e.id !== id) })),
+  removeEdge: (id) => {
+    set((s) => ({
+      edges: s.edges.filter((e) => e.id !== id),
+      selectedEdgeId: s.selectedEdgeId === id ? null : s.selectedEdgeId,
+    }));
+    get().pushHistory();
+  },
+
+  validateEdge: (edge) => {
+    const s = get();
+    // 1. Self-loop prevention
+    if (edge.source === edge.target) {
+      return { valid: false, error: "Self-loop detected! Cannot connect a node to itself." };
+    }
+    // 2. Duplicate connection prevention
+    const isDuplicate = s.edges.some(
+      (e) =>
+        e.source === edge.source &&
+        e.target === edge.target &&
+        e.sourceHandle === edge.sourceHandle &&
+        e.targetHandle === edge.targetHandle
+    );
+    if (isDuplicate) {
+      return { valid: false, error: "Duplicate connection! This edge already exists." };
+    }
+    // 3. Directional flow: output -> input
+    const sourceNode = s.nodes.find((n) => n.id === edge.source);
+    const targetNode = s.nodes.find((n) => n.id === edge.target);
+    if (!sourceNode || !targetNode) {
+      return { valid: false, error: "Invalid nodes for connection." };
+    }
+    const sourceHandle = sourceNode.outputs.find((h) => h.id === edge.sourceHandle);
+    const targetHandle = targetNode.inputs.find((h) => h.id === edge.targetHandle);
+    if (!sourceHandle && sourceNode.outputs.length > 0) {
+      return { valid: false, error: "Invalid source handle." };
+    }
+    if (!targetHandle && targetNode.inputs.length > 0) {
+      return { valid: false, error: "Invalid target handle." };
+    }
+    // 4. Target handle already occupied
+    if (targetHandle && targetNode.inputs.length > 0) {
+      const handleOccupied = s.edges.some(
+        (e) => e.target === edge.target && e.targetHandle === edge.targetHandle
+      );
+      if (handleOccupied) {
+        return { valid: false, error: "Target handle already occupied!" };
+      }
+    }
+    return { valid: true };
+  },
 
   setViewport: (viewport) => set({ viewport }),
 
@@ -288,6 +380,7 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
     })),
 
   setSelectedNodeId: (id) => set({ selectedNodeId: id }),
+  setSelectedEdgeId: (id) => set({ selectedEdgeId: id }),
   setIsDraggingNode: (val) => set({ isDraggingNode: val }),
   setIsPanning: (val) => set({ isPanning: val }),
   setActiveEdgeIds: (ids) => set({ activeEdgeIds: ids }),
@@ -296,8 +389,61 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   setIsExecuting: (val) => set({ isExecuting: val }),
   setShowConsole: (val) => set({ showConsole: val }),
   setConnectingFrom: (val) => set({ connectingFrom: val }),
+
+  pushHistory: () => {
+    set((s) => {
+      const entry: HistoryEntry = {
+        nodes: deepClone(s.nodes),
+        edges: deepClone(s.edges),
+      };
+      const newHistory = s.history.slice(0, s.historyIndex + 1);
+      newHistory.push(entry);
+      // Keep max 50 entries
+      if (newHistory.length > 50) {
+        newHistory.shift();
+      }
+      return {
+        history: newHistory,
+        historyIndex: newHistory.length - 1,
+      };
+    });
+  },
+
+  undo: () => {
+    set((s) => {
+      if (s.historyIndex <= 0) return s;
+      const newIndex = s.historyIndex - 1;
+      const entry = s.history[newIndex];
+      return {
+        historyIndex: newIndex,
+        nodes: deepClone(entry.nodes),
+        edges: deepClone(entry.edges),
+        selectedNodeId: null,
+        selectedEdgeId: null,
+      };
+    });
+  },
+
+  redo: () => {
+    set((s) => {
+      if (s.historyIndex >= s.history.length - 1) return s;
+      const newIndex = s.historyIndex + 1;
+      const entry = s.history[newIndex];
+      return {
+        historyIndex: newIndex,
+        nodes: deepClone(entry.nodes),
+        edges: deepClone(entry.edges),
+        selectedNodeId: null,
+        selectedEdgeId: null,
+      };
+    });
+  },
+
   reset: () => set({ ...initialState }),
-  loadWorkflow: (nodes, edges) => set({ nodes, edges, viewport: { x: 0, y: 0, zoom: 1 } }),
+  loadWorkflow: (nodes, edges) => {
+    set({ nodes, edges, viewport: { x: 0, y: 0, zoom: 1 } });
+    get().pushHistory();
+  },
   getNodeById: (id) => get().nodes.find((n) => n.id === id),
   getEdgesForNode: (nodeId) => get().edges.filter((e) => e.source === nodeId || e.target === nodeId),
 }));

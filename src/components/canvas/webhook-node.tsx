@@ -29,9 +29,14 @@ export function WebhookNode({ node }: { node: CanvasNode }) {
         sourceHandle: store.connectingFrom.handleId,
         targetHandle: "in",
       };
-      store.addEdge(newEdge);
-      store.setConnectingFrom(null);
-      toast.success("Connected");
+      const ok = store.addEdge(newEdge);
+      if (ok) {
+        store.setConnectingFrom(null);
+        toast.success("Connected");
+      } else {
+        const validation = store.validateEdge(newEdge);
+        toast.error(validation.error || "Invalid connection");
+      }
     }
   };
 
@@ -41,7 +46,6 @@ export function WebhookNode({ node }: { node: CanvasNode }) {
         isSelected ? "border-[rgba(0,229,255,0.4)] shadow-[0_0_30px_rgba(0,229,255,0.15)]" : "border-[rgba(0,229,255,0.18)] shadow-[0_0_20px_rgba(0,229,255,0.08)]"
       }`}
     >
-      {/* Connector dot - right */}
       <button
         onClick={(e) => {
           e.stopPropagation();
@@ -54,7 +58,6 @@ export function WebhookNode({ node }: { node: CanvasNode }) {
         className="absolute -right-1.5 top-1/2 -translate-y-1/2 h-3 w-3 rounded-full bg-[#121214] border-2 border-[#00E5FF] z-20 cursor-pointer hover:scale-125 transition-transform"
         style={{ boxShadow: "0 0 8px rgba(0,229,255,0.6)" }}
       />
-      {/* Input connector dot - accept connections */}
       <button
         onClick={handleConnect}
         className="absolute -left-1.5 top-1/2 -translate-y-1/2 h-3 w-3 rounded-full bg-[#121214] border-2 border-[#00E5FF] z-20 cursor-pointer hover:scale-125 transition-transform opacity-0 pointer-events-none"

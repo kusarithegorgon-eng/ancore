@@ -47,15 +47,7 @@ function AuthPage() {
       <div className="flex-1 flex items-center justify-center px-4">
         <div className="w-full max-w-sm">
           <div className="flex items-center gap-2.5 mb-10">
-            <div
-              className="h-8 w-8 rounded-md flex items-center justify-center"
-              style={{
-                background: "linear-gradient(135deg,#00E5FF,#0088aa)",
-                boxShadow: "0 0 14px rgba(0,229,255,0.5)",
-              }}
-            >
-              <Sparkles className="h-4 w-4 text-[#07181c]" strokeWidth={2.5} />
-            </div>
+            <img src="/images/Gemini_Generated_Image_mggxphmggxphmggx.png" alt="Ancrest" className="h-8 w-8 rounded-md object-cover" />
             <span className="font-display text-lg font-bold tracking-tight text-foreground">
               Ancrest
             </span>

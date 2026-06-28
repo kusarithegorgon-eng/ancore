@@ -2,9 +2,10 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/lib/supabase";
-import { Sparkles, Plus, ArrowRight, Clock, Trash2, Play, MoveHorizontal as MoreHorizontal, LayoutGrid, Layers, Zap, GitBranch, ListFilter as Filter, Globe, Database, Cpu } from "lucide-react";
+import { Sparkles, Plus, ArrowRight, Trash2, Play, LayoutGrid, Layers, Zap, GitBranch, ListFilter as Filter, Globe, Database, Cpu, Layers as Layers3 } from "lucide-react";
 import { toast } from "sonner";
 import type { CanvasNode, CanvasEdge } from "@/lib/canvas-store";
+import { TemplateLibrary } from "@/components/dashboard/template-library";
 
 type Workflow = {
   id: string;
@@ -38,6 +39,7 @@ function DashboardPage() {
   const navigate = useNavigate();
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showTemplates, setShowTemplates] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -91,13 +93,22 @@ function DashboardPage() {
               <h1 className="font-display text-2xl font-bold text-foreground">Workflows</h1>
               <p className="text-sm text-muted-foreground mt-1">Manage and edit your automation pipelines</p>
             </div>
-            <button
-              onClick={createWorkflow}
-              className="cta-cyan cta-cyan-hover h-10 px-5 rounded-lg text-sm font-semibold inline-flex items-center gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              New Workflow
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowTemplates(true)}
+                className="neumorphic neumorphic-press h-10 px-4 rounded-lg text-sm font-medium text-foreground/85 border border-white/[0.04] inline-flex items-center gap-2"
+              >
+                <Layers3 className="h-4 w-4" />
+                Templates
+              </button>
+              <button
+                onClick={createWorkflow}
+                className="cta-cyan cta-cyan-hover h-10 px-5 rounded-lg text-sm font-semibold inline-flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                New Workflow
+              </button>
+            </div>
           </div>
 
           {loading ? (
@@ -132,6 +143,11 @@ function DashboardPage() {
           )}
         </div>
       </main>
+      <TemplateLibrary
+        open={showTemplates}
+        onClose={() => setShowTemplates(false)}
+        onCreated={() => loadWorkflows()}
+      />
     </div>
   );
 }
@@ -140,12 +156,7 @@ function DashboardHeader({ user, onSignOut }: { user: { email: string } | null; 
   return (
     <header className="glass-nav h-16 flex items-center justify-between px-6 lg:px-12 relative z-20">
       <div className="flex items-center gap-2.5">
-        <div
-          className="h-7 w-7 rounded-md flex items-center justify-center"
-          style={{ background: "linear-gradient(135deg,#00E5FF,#0088aa)", boxShadow: "0 0 14px rgba(0,229,255,0.5)" }}
-        >
-          <Sparkles className="h-3.5 w-3.5 text-[#07181c]" strokeWidth={2.5} />
-        </div>
+        <img src="/images/Gemini_Generated_Image_mggxphmggxphmggx.png" alt="Ancrest" className="h-7 w-7 rounded-md object-cover" />
         <Link to="/" className="font-display text-lg font-bold tracking-tight text-foreground hover:opacity-80 transition-opacity">
           Ancrest
         </Link>

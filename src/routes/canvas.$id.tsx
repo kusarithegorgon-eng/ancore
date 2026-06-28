@@ -3,7 +3,7 @@ import { useEffect, useRef, useCallback, useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/lib/supabase";
 import { useCanvasStore, type CanvasNode, type CanvasEdge, createDefaultNode } from "@/lib/canvas-store";
-import { Sparkles, Play, Save, ChevronLeft, PanelLeftClose, PanelLeftOpen, Webhook, GitBranch, ListFilter as Filter, Cpu, Globe, ChevronRight, X, Terminal } from "lucide-react";
+import { Sparkles, Play, Save, ChevronLeft, PanelLeftClose, PanelLeftOpen, Webhook, GitBranch, ListFilter as Filter, Cpu, Globe, ChevronRight, X, Terminal, Undo2, Redo2 } from "lucide-react";
 import { toast } from "sonner";
 import { WebhookNode } from "@/components/canvas/webhook-node";
 import { IfElseNode } from "@/components/canvas/ifelse-node";
@@ -65,6 +65,42 @@ function CanvasPage() {
   const dragStart = useRef({ x: 0, y: 0 });
   const panStart = useRef({ x: 0, y: 0 });
   const lastMouse = useRef({ x: 0, y: 0 });
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Delete" || e.key === "Backspace") {
+        const target = e.target as HTMLElement;
+        if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.tagName === "SELECT") {
+          return;
+        }
+        if (store.selectedNodeId) {
+          store.removeNode(store.selectedNodeId);
+          toast.success("Node deleted");
+        } else if (store.selectedEdgeId) {
+          store.removeEdge(store.selectedEdgeId);
+          toast.success("Edge deleted");
+        }
+      }
+      if ((e.metaKey || e.ctrlKey) && e.key === "z") {
+        e.preventDefault();
+        if (e.shiftKey) {
+          store.redo();
+          toast.success("Redo");
+        } else {
+          store.undo();
+          toast.success("Undo");
+        }
+      }
+      if (e.key === "Escape") {
+        store.setSelectedNodeId(null);
+        store.setSelectedEdgeId(null);
+        store.setConnectingFrom(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [store]);
 
   const store = useCanvasStore();
 
@@ -203,9 +239,7 @@ function CanvasPage() {
           <Link to="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors">
             <ChevronLeft className="h-4 w-4" />
           </Link>
-          <div className="h-5 w-5 rounded-sm flex items-center justify-center" style={{ background: "linear-gradient(135deg,#00E5FF,#0088aa)" }}>
-            <Sparkles className="h-2.5 w-2.5 text-[#07181c]" strokeWidth={3} />
-          </div>
+          <img src="/images/Gemini_Generated_Image_mggxphmggxphmggx.png" alt="Ancrest" className="h-5 w-5 rounded-sm object-cover" />
         </div>
 
         <div className="flex-1 flex items-center justify-center gap-3">
@@ -222,6 +256,22 @@ function CanvasPage() {
         </div>
 
         <div className="flex items-center gap-2.5 w-[240px] justify-end">
+          <button
+            onClick={store.undo}
+            disabled={store.historyIndex <= 0}
+            className="neumorphic neumorphic-press h-8 w-8 rounded-lg flex items-center justify-center text-[12px] font-medium text-foreground/85 border border-white/[0.04] disabled:opacity-30"
+            title="Undo (Ctrl+Z)"
+          >
+            <Undo2 className="h-3.5 w-3.5" />
+          </button>
+          <button
+            onClick={store.redo}
+            disabled={store.historyIndex >= store.history.length - 1}
+            className="neumorphic neumorphic-press h-8 w-8 rounded-lg flex items-center justify-center text-[12px] font-medium text-foreground/85 border border-white/[0.04] disabled:opacity-30"
+            title="Redo (Ctrl+Shift+Z)"
+          >
+            <Redo2 className="h-3.5 w-3.5" />
+          </button>
           <button
             onClick={runTest}
             disabled={store.isExecuting}
