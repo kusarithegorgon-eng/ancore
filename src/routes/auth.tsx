@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import { Sparkles, Mail, Lock, UserPlus, LogIn, ArrowRight } from "lucide-react";
+import { Mail, Lock, UserPlus, LogIn, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
@@ -15,11 +15,17 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  if (user) {
-    navigate({ to: "/dashboard" });
-    return null;
-  }
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted && user) {
+      navigate({ to: "/dashboard" });
+    }
+  }, [mounted, user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,47 +59,47 @@ function AuthPage() {
             </span>
           </div>
 
-          <h1 className="font-display text-2xl font-bold text-foreground mb-1">
-            {isLogin ? "Sign in" : "Create account"}
+          <h1 className="font-display text-2xl font-bold text-foreground mb-2">
+            {isLogin ? "Welcome back" : "Create account"}
           </h1>
           <p className="text-sm text-muted-foreground mb-8">
-            {isLogin ? "Welcome back to your workflow studio" : "Get started with your automation studio"}
+            {isLogin
+              ? "Sign in to access your workflows"
+              : "Get started with your first automation"}
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-foreground/80 mb-1.5">Email</label>
+              <label className="block text-xs font-medium text-muted-foreground mb-1.5">
+                Email
+              </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  className="w-full h-10 pl-10 pr-3 rounded-lg bg-[#121214] border border-border-subtle text-sm text-foreground focus:outline-none focus:border-[color:var(--accent)]/40 transition-colors"
                   placeholder="you@example.com"
                   required
-                  className="w-full h-10 pl-10 pr-3 rounded-lg bg-[#0f0f11] border border-border-subtle
-                           text-sm placeholder:text-muted-foreground/70 text-foreground
-                           focus:outline-none focus:border-[color:var(--accent)]/40
-                           focus:shadow-[0_0_0_3px_rgba(0,229,255,0.08)] transition-all"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-foreground/80 mb-1.5">Password</label>
+              <label className="block text-xs font-medium text-muted-foreground mb-1.5">
+                Password
+              </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="········"
+                  className="w-full h-10 pl-10 pr-3 rounded-lg bg-[#121214] border border-border-subtle text-sm text-foreground focus:outline-none focus:border-[color:var(--accent)]/40 transition-colors"
+                  placeholder="••••••••"
                   required
                   minLength={6}
-                  className="w-full h-10 pl-10 pr-3 rounded-lg bg-[#0f0f11] border border-border-subtle
-                           text-sm placeholder:text-muted-foreground/70 text-foreground
-                           focus:outline-none focus:border-[color:var(--accent)]/40
-                           focus:shadow-[0_0_0_3px_rgba(0,229,255,0.08)] transition-all"
                 />
               </div>
             </div>
@@ -101,30 +107,31 @@ function AuthPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full cta-cyan cta-cyan-hover h-10 rounded-lg text-sm font-semibold
-                       inline-flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full h-10 rounded-lg bg-[color:var(--accent)] text-[#07181c] font-semibold text-sm hover:brightness-110 transition-all disabled:opacity-50 inline-flex items-center justify-center gap-2"
             >
               {loading ? (
                 <span className="h-4 w-4 border-2 border-[#07181c]/40 border-t-[#07181c] rounded-full animate-spin" />
               ) : isLogin ? (
                 <>
                   <LogIn className="h-4 w-4" />
-                  Sign in
+                  Sign In
                 </>
               ) : (
                 <>
                   <UserPlus className="h-4 w-4" />
-                  Create account
+                  Create Account
                 </>
               )}
             </button>
           </form>
 
-          <div className="mt-6 flex items-center justify-center gap-1 text-sm text-muted-foreground">
-            {isLogin ? "Don't have an account?" : "Already have an account?"}
+          <div className="mt-6 flex items-center justify-center gap-1 text-sm">
+            <span className="text-muted-foreground">
+              {isLogin ? "Don't have an account?" : "Already have an account?"}
+            </span>
             <button
               onClick={() => setIsLogin(!isLogin)}
-              className="text-[color:var(--accent)] font-medium hover:underline inline-flex items-center gap-1 ml-1"
+              className="text-[color:var(--accent)] font-medium hover:underline inline-flex items-center gap-1"
             >
               {isLogin ? "Sign up" : "Sign in"}
               <ArrowRight className="h-3 w-3" />

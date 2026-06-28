@@ -36,19 +36,6 @@ const toneColors = {
 
 export const Route = createFileRoute("/canvas/$id")({
   component: CanvasPage,
-  beforeLoad: async () => {
-    const { data } = await supabase.auth.getSession();
-    if (!data.session) {
-      throw new Error("Unauthorized");
-    }
-  },
-  errorComponent: () => {
-    const navigate = useNavigate();
-    useEffect(() => {
-      navigate({ to: "/auth" });
-    }, [navigate]);
-    return null;
-  },
 });
 
 function CanvasPage() {
@@ -59,6 +46,7 @@ function CanvasPage() {
   const [workflowName, setWorkflowName] = useState("Untitled");
   const [saving, setSaving] = useState(false);
 
+  const store = useCanvasStore();
   const canvasRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
   const dragNodeId = useRef<string | null>(null);
@@ -102,13 +90,18 @@ function CanvasPage() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [store]);
 
-  const store = useCanvasStore();
+  // Auth guard
+  useEffect(() => {
+    if (!user) {
+      navigate({ to: "/auth" });
+    }
+  }, [user, navigate]);
 
   // Load workflow
   useEffect(() => {
-    if (!id) return;
+    if (!id || !user) return;
     loadWorkflow();
-  }, [id]);
+  }, [id, user]);
 
   async function loadWorkflow() {
     const { data, error } = await supabase

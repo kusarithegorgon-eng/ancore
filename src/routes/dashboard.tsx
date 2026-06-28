@@ -19,19 +19,6 @@ type Workflow = {
 
 export const Route = createFileRoute("/dashboard")({
   component: DashboardPage,
-  beforeLoad: async () => {
-    const { data } = await supabase.auth.getSession();
-    if (!data.session) {
-      throw new Error("Unauthorized");
-    }
-  },
-  errorComponent: () => {
-    const navigate = useNavigate();
-    useEffect(() => {
-      navigate({ to: "/auth" });
-    }, [navigate]);
-    return null;
-  },
 });
 
 function DashboardPage() {
@@ -42,9 +29,12 @@ function DashboardPage() {
   const [showTemplates, setShowTemplates] = useState(false);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      navigate({ to: "/auth" });
+      return;
+    }
     loadWorkflows();
-  }, [user]);
+  }, [user, navigate]);
 
   async function loadWorkflows() {
     setLoading(true);
