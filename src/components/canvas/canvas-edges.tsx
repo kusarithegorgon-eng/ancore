@@ -1,0 +1,117 @@
+import { useCanvasStore } from "@/lib/canvas-store";
+
+function getHandlePosition(node: import("@/lib/canvas-store").CanvasNode, handleId: string, isSource: boolean): { x: number; y: number } {
+  const handle = isSource
+    ? node.outputs.find((h) => h.id === handleId)
+    : node.inputs.find((h) => h.id === handleId);
+  if (!handle) {
+    // fallback
+    return {
+      x: isSource ? node.x + node.width : node.x,
+      y: node.y + node.height / 2,
+    };
+  }
+  switch (handle.position) {
+    case "left":
+      return { x: node.x, y: node.y + node.height / 2 };
+    case "right":
+      return { x: node.x + node.width, y: node.y + node.height / 2 };
+    case "top":
+      return { x: node.x + node.width / 2, y: node.y };
+    case "bottom":
+      return { x: node.x + node.width / 2, y: node.y + node.height };
+    default:
+      return { x: isSource ? node.x + node.width : node.x, y: node.y + node.height / 2 };
+  }
+}
+
+function computeBezierPath(
+  x1: number, y1: number, x2: number, y2: number,
+  sourcePos: string, targetPos: string
+): string {
+  const dx = Math.abs(x2 - x1);
+  const controlOffset = Math.max(dx * 0.5, 50);
+  const sx = sourcePos === "right" ? x1 + controlOffset : sourcePos === "left" ? x1 - controlOffset : x1;
+  const sy = sourcePos === "bottom" ? y1 + controlOffset : sourcePos === "top" ? y1 - controlOffset : y1;
+  const tx = targetPos === "right" ? x2 + controlOffset : targetPos === "left" ? x2 - controlOffset : x2;
+  const ty = targetPos === "bottom" ? y2 + controlOffset : targetPos === "top" ? y2 - controlOffset : y2;
+  return `M ${x1} ${y1} C ${sx} ${sy}, ${tx} ${ty}, ${x2} ${y2}`;
+}
+
+export function CanvasEdges() {
+  const { nodes, edges, activeEdgeIds } = useCanvasStore();
+
+  const edgeColor = (edgeId: string) => {
+    if (activeEdgeIds.includes(edgeId)) return "#00E5FF";
+    return "#3a3a42";
+  };
+
+  const edgeWidth = (edgeId: string) => {
+    if (activeEdgeIds.includes(edgeId)) return 2.5;
+    return 1.5;
+  };
+
+  const edgeOpacity = (edgeId: string) => {
+    if (activeEdgeIds.includes(edgeId)) return 1;
+    return 0.6;
+  };
+
+  return (
+    <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 1, width: 10000, height: 10000 }}>
+      <defs>
+        <filter id="edgeGlow">
+          <feGaussianBlur stdDeviation="3" result="b" />
+          <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+        </filter>
+        <filter id="edgeGlowActive">
+          <feGaussianBlur stdDeviation="5" result="b" />
+          <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+        </filter>
+        <linearGradient id="gradTeal" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#00E5FF" stopOpacity="0.9" />
+          <stop offset="100%" stopColor="#B57BFF" stopOpacity="0.9" />
+        </linearGradient>
+        <linearGradient id="gradAmber" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#B57BFF" stopOpacity="0.9" />
+          <stop offset="100%" stopColor="#FFB547" stopOpacity="0.9" />
+        </linearGradient>
+      </defs>
+      {edges.map((edge) => {
+        const sourceNode = nodes.find((n) => n.id === edge.sourceNodeId);
+        const targetNode = nodes.find((n) => n.id === edge.targetNodeId);
+        if (!sourceNode || !targetNode) return null;
+
+        const sourceHandle = sourceNode.outputs.find((h) => h.id === edge.sourceHandle);
+        const targetHandle = targetNode.inputs.find((h) => h.id === edge.targetHandle);
+        const sourcePos = getHandlePosition(sourceNode, edge.sourceHandle, true);
+        const targetPos = getHandlePosition(targetNode, edge.targetHandle, false);
+        const d = computeBezierPath(
+          sourcePos.x, sourcePos.y, targetPos.x, targetPos.y,
+          sourceHandle?.position ?? "right", targetHandle?.position ?? "left"
+        );
+        const isActive = activeEdgeIds.includes(edge.id);
+
+        return (
+          <g key={edge.id}>
+            {isActive && (
+              <>
+                <path d={d} stroke="#00E5FF" strokeWidth={edgeWidth(edge.id) + 4} fill="none" opacity={0.3} filter="url(#edgeGlowActive)" />
+                <path d={d} stroke="url(#gradTeal)" strokeWidth={edgeWidth(edge.id)} fill="none" opacity={0.9} filter="url(#edgeGlowActive)" strokeDasharray="8 4">
+                  <animate attributeName="stroke-dashoffset" from="0" to="24" dur="0.6s" repeatCount="indefinite" />
+                </path>
+              </>
+            )}
+            <path
+              d={d}
+              stroke={edgeColor(edge.id)}
+              strokeWidth={edgeWidth(edge.id)}
+              fill="none"
+              opacity={edgeOpacity(edge.id)}
+              filter={isActive ? "url(#edgeGlowActive)" : "url(#edgeGlow)"}
+            />
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
