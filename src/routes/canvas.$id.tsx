@@ -40,7 +40,7 @@ export const Route = createFileRoute("/canvas/$id")({
 
 function CanvasPage() {
   const { id } = useParams({ from: "/canvas/$id" });
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [workflowName, setWorkflowName] = useState("Untitled");
@@ -100,9 +100,9 @@ function CanvasPage() {
 
   // Load workflow
   useEffect(() => {
-    if (!id || !user) return;
+    if (!id || !user || authLoading) return;
     loadWorkflow();
-  }, [id, user]);
+  }, [id, user, authLoading]);
 
   async function loadWorkflow() {
     const { data, error } = await supabase
