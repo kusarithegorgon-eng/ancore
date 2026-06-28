@@ -1,0 +1,146 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border-subtle: var(--border-subtle);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-glow: var(--accent-glow);
+  --color-purple: var(--purple);
+  --color-amber: var(--amber);
+  --color-primary: var(--accent);
+  --color-primary-foreground: #07181c;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Syne", "Inter", sans-serif;
+  --radius-lg: 14px;
+  --radius-md: 10px;
+  --radius-sm: 6px;
+}
+
+:root {
+  --background: #0B0B0C;
+  --foreground: #F2F3F5;
+  --surface: #121214;
+  --surface-2: #16161A;
+  --border-subtle: rgba(31, 31, 35, 0.55);
+  --muted: #1A1A1E;
+  --muted-foreground: #8A8A93;
+  --accent: #00E5FF;
+  --accent-glow: rgba(0, 229, 255, 0.45);
+  --purple: #B57BFF;
+  --amber: #FFB547;
+
+  /* shadcn fallbacks (unused but safe) */
+  --border: var(--border-subtle);
+  --input: var(--surface-2);
+  --ring: var(--accent);
+  --primary: var(--accent);
+  --primary-foreground: #07181c;
+  --secondary: var(--surface);
+  --secondary-foreground: var(--foreground);
+  --card: var(--surface);
+  --card-foreground: var(--foreground);
+  --popover: var(--surface);
+  --popover-foreground: var(--foreground);
+  --destructive: oklch(0.6 0.22 25);
+  --destructive-foreground: #fff;
+}
+
+@layer base {
+  * {
+    border-color: var(--border-subtle);
+  }
+  html, body, #root {
+    height: 100%;
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+  }
+  h1, h2, h3, .font-display {
+    font-family: var(--font-display);
+    letter-spacing: -0.04em;
+  }
+}
+
+@utility glass-nav {
+  background: rgba(11, 11, 12, 0.55);
+  backdrop-filter: blur(12px) saturate(140%);
+  border-bottom: 1px solid rgba(31, 31, 35, 0.08);
+}
+
+@utility neumorphic {
+  background: linear-gradient(180deg, #18181c 0%, #101012 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    -4px -4px 10px rgba(255, 255, 255, 0.015),
+    4px 4px 12px rgba(0, 0, 0, 0.55);
+  transition: all 0.18s ease;
+}
+@utility neumorphic-press {
+  &:active {
+    box-shadow:
+      inset 2px 2px 6px rgba(0, 0, 0, 0.6),
+      inset -2px -2px 6px rgba(255, 255, 255, 0.02);
+    transform: translateY(1px);
+  }
+}
+
+@utility cta-cyan {
+  background: linear-gradient(180deg, #00E5FF 0%, #00B8CC 100%);
+  color: #07181c;
+  box-shadow:
+    0 0 0 1px rgba(0, 229, 255, 0.35),
+    0 8px 24px -8px rgba(0, 229, 255, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  transition: all 0.3s ease;
+}
+@utility cta-cyan-hover {
+  &:hover {
+    box-shadow:
+      0 0 0 1px rgba(0, 229, 255, 0.6),
+      0 10px 32px -6px rgba(0, 229, 255, 0.8),
+      inset 0 1px 0 rgba(255, 255, 255, 0.5);
+    transform: translateY(-1px);
+  }
+}
+
+@utility dot-grid {
+  background-image: radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px);
+  background-size: 22px 22px;
+  background-position: 0 0;
+}
+
+@utility node-glow-teal {
+  box-shadow:
+    0 0 0 1px rgba(0, 229, 255, 0.22),
+    0 0 30px -6px rgba(0, 229, 255, 0.25),
+    0 20px 40px -20px rgba(0,0,0,0.8);
+}
+@utility node-glow-purple {
+  box-shadow:
+    0 0 0 1px rgba(181, 123, 255, 0.25),
+    0 0 30px -6px rgba(181, 123, 255, 0.28),
+    0 20px 40px -20px rgba(0,0,0,0.8);
+}
+@utility node-glow-amber {
+  box-shadow:
+    0 0 0 1px rgba(255, 181, 71, 0.22),
+    0 0 30px -6px rgba(255, 181, 71, 0.25),
+    0 20px 40px -20px rgba(0,0,0,0.8);
+}
+
+@utility logo-glow {
+  text-shadow: 0 0 12px rgba(0, 229, 255, 0.7), 0 0 32px rgba(0, 229, 255, 0.25);
+}
